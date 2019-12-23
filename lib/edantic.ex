@@ -141,7 +141,7 @@ defmodule Edantic do
   end
 
   def cast_to_type({:type, _, :list, [element_type]}, data) when is_list(data) do
-    cast_list_to_type(element_type, [], data)
+    cast_list_to_type(element_type, "list()", [], data)
   end
 
   def cast_to_type({:type, _, :list, _} = type, data) do
@@ -155,7 +155,7 @@ defmodule Edantic do
   end
 
   def cast_to_type({:type, _, :nonempty_list, [element_type]}, [_ | _] = data) do
-    cast_list_to_type(element_type, [], data)
+    cast_list_to_type(element_type, "nonempty_list()", [], data)
   end
 
   def cast_to_type({:type, _, :nonempty_list, _} = type, data) do
@@ -168,12 +168,45 @@ defmodule Edantic do
     {:ok, data}
   end
 
-  def cast_to_type({:type, _, :maybe_improper_list, [element_type, last_element_type]}, data) when is_list(data) do
-    cast_maybe_improper_list_to_type(element_type, last_element_type, [], data)
+  def cast_to_type({:type, _, :maybe_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) do
+    case cast_to_type(last_element_type, []) do
+      {:ok, _} -> cast_list_to_type(element_type, "maybe_improper_list()", [], data)
+      {:error, _} -> {:error, {"cannot cast data to maybe_improper_list()", type, data}}
+    end
   end
 
   def cast_to_type({:type, _, :maybe_improper_list, _} = type, data) do
     {:error, {"cannot cast data to maybe_improper_list()", type, data}}
+  end
+
+  # nonempty_improper_list()
+
+  def cast_to_type({:type, _, :nonempty_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) and length(data) > 0 do
+    case cast_to_type(last_element_type, []) do
+      {:ok, _} -> cast_list_to_type(element_type, "nonempty_improper_list()", [], data)
+      {:error, _} -> {:error, {"cannot cast data to nonempty_improper_list()", type, data}}
+    end
+  end
+
+  def cast_to_type({:type, _, :nonempty_improper_list, _} = type, data) do
+    {:error, {"cannot cast data to nonempty_improper_list()", type, data}}
+  end
+
+  # nonempty_maybe_improper_list()
+
+  def cast_to_type({:type, _, :nonempty_maybe_improper_list, []}, data) when is_list(data) and length(data) > 0 do
+    {:ok, data}
+  end
+
+  def cast_to_type({:type, _, :nonempty_maybe_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) and length(data) > 0 do
+    case cast_to_type(last_element_type, []) do
+      {:ok, _} -> cast_list_to_type(element_type, "nonempty_maybe_improper_list()", [], data)
+      {:error, _} -> {:error, {"cannot cast data to nonempty_maybe_improper_list()", type, data}}
+    end
+  end
+
+  def cast_to_type({:type, _, :nonempty_maybe_improper_list, _} = type, data) do
+    {:error, {"cannot cast data to nonempty_maybe_improper_list()", type, data}}
   end
 
   # fallback()
@@ -182,41 +215,16 @@ defmodule Edantic do
     {:error, {"cannot cast data", type, data}}
   end
 
-  defp cast_list_to_type(_type, casted, []) do
+  defp cast_list_to_type(_type, _name, casted, []) do
     {:ok, Enum.reverse(casted)}
   end
 
-  defp cast_list_to_type(type, casted, [el | rest]) do
+  defp cast_list_to_type(type, name, casted, [el | rest]) do
     case cast_to_type(type, el) do
-      {:ok, el_casted} -> cast_list_to_type(type, [el_casted | casted], rest)
-      {:error, error} -> {:error, {"can't cast list element", error}}
+      {:ok, el_casted} -> cast_list_to_type(type, name, [el_casted | casted], rest)
+      {:error, error} -> {:error, {"can't cast #{name} element", error}}
     end
   end
-
-  def cast_maybe_improper_list_to_type(_, _, _, []) do
-    {:ok, []}
-  end
-
-  def cast_maybe_improper_list_to_type(element_type, last_element_type, casted, [el]) do
-    case cast_to_type(element_type, el) do
-      {:ok, casted_el} -> {:ok, Enum.reverse([casted_el | casted])}
-      {:error, _} ->
-        case cast_to_type(last_element_type, el) do
-          {:ok, casted_el} -> {:ok, reverse_improper_list(casted, casted_el)}
-          {:error, error} -> {:error, {"can't cast improper list last element", error}}
-        end
-    end
-  end
-
-  def cast_maybe_improper_list_to_type(element_type, last_element_type, casted, [el | rest]) when length(rest) > 0 do
-    case cast_to_type(element_type, el) do
-      {:ok, casted_el} -> cast_maybe_improper_list_to_type(element_type, last_element_type, [casted_el | casted], rest)
-      {:error, error} -> {:error, {"can't cast improper list element", error}}
-    end
-  end
-
-  defp reverse_improper_list([], res), do: res
-  defp reverse_improper_list([head | other], res), do: reverse_improper_list(other, [head | res])
 
   defp cast_to_integer(type, name, valid?, data) when is_integer(data) do
     if valid?.(data) do

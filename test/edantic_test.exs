@@ -184,7 +184,6 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(t, "foo")
     assert {:error, _} = Edantic.cast_to_type(t, %{})
     assert {:error, _} = Edantic.cast_to_type(t, 1.5)
-    assert {:error, _} = Edantic.cast_to_type(t, [:foo])
     assert {:error, _} = Edantic.cast_to_type(t, [1.5])
     assert {:error, _} = Edantic.cast_to_type(t, [])
 
@@ -200,7 +199,7 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(t, 1.5)
 
     assert {:ok, []} = Edantic.cast_to_type(t, [])
-    assert {:ok, [5, :foo]} = Edantic.cast_to_type(t, [5, :foo])
+    assert {:ok, [5, "foo"]} = Edantic.cast_to_type(t, [5, "foo"])
   end
 
   test "cast: maybe_improper_list(integer(), float())" do
@@ -209,13 +208,85 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(t, "foo")
     assert {:error, _} = Edantic.cast_to_type(t, %{})
     assert {:error, _} = Edantic.cast_to_type(t, 1.5)
-    assert {:error, _} = Edantic.cast_to_type(t, [:foo])
+    assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6])
+  end
+
+  test "cast: maybe_improper_list(integer(), list())" do
+    t = Types.t(:t_maybe_improper_list_integer_list)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
     assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
 
-    assert {:ok, 1.5} = Edantic.cast_to_type(t, [1.5])
     assert {:ok, []} = Edantic.cast_to_type(t, [])
     assert {:ok, [5]} = Edantic.cast_to_type(t, [5])
-    assert {:ok, [5 | [6 | 7.5]]} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:ok, [5, 6, 7]} = Edantic.cast_to_type(t, [5, 6, 7])
+  end
+
+  test "cast: nonempty_improper_list(integer(), float())" do
+    t = Types.t(:t_nonempty_improper_list_integer_float)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
+    assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6])
+  end
+
+  test "cast: nonempty_improper_list(integer(), list())" do
+    t = Types.t(:t_nonempty_improper_list_integer_list)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
+    assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+
+    assert {:ok, [5, 6]} = Edantic.cast_to_type(t, [5, "6"])
+  end
+
+  test "cast: nonempty_maybe_improper_list()" do
+    t = Types.t(:t_nonempty_maybe_improper_list)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+
+    assert {:ok, [5, "foo"]} = Edantic.cast_to_type(t, [5, "foo"])
+  end
+
+
+  test "cast: nonempty_maybe_improper_list(integer(), float())" do
+    t = Types.t(:t_nonempty_maybe_improper_list_integer_float)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
+    assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6])
+  end
+
+  test "cast: nonempty_maybe_improper_list(integer(), list())" do
+    t = Types.t(:t_nonempty_maybe_improper_list_integer_list)
+
+    assert {:error, _} = Edantic.cast_to_type(t, "foo")
+    assert {:error, _} = Edantic.cast_to_type(t, %{})
+    assert {:error, _} = Edantic.cast_to_type(t, 1.5)
+    assert {:error, _} = Edantic.cast_to_type(t, [2.5, 3.1])
+    assert {:error, _} = Edantic.cast_to_type(t, [5, 6, 7.5])
+    assert {:error, _} = Edantic.cast_to_type(t, [])
+
+    assert {:ok, [5, 6]} = Edantic.cast_to_type(t, [5, "6"])
   end
 
 end

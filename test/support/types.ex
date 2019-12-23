@@ -44,7 +44,13 @@ defmodule Edantic.Support.Types do
   @type t_maybe_improper_list :: maybe_improper_list()
 
   @type t_maybe_improper_list_integer_float :: maybe_improper_list(integer(), float())
+  @type t_maybe_improper_list_integer_list :: maybe_improper_list(integer(), list())
 
-  #     | nonempty_improper_list(type1, type2)        # improper list
-  #     | nonempty_maybe_improper_list(type1, type2)  # non-empty proper or improper list
+  @type t_nonempty_improper_list_integer_float :: nonempty_improper_list(integer(), float())
+  @type t_nonempty_improper_list_integer_list :: nonempty_improper_list(integer(), list())
+
+  @type t_nonempty_maybe_improper_list :: nonempty_maybe_improper_list()
+  @type t_nonempty_maybe_improper_list_integer_float :: nonempty_maybe_improper_list(integer(), float())
+  @type t_nonempty_maybe_improper_list_integer_list :: nonempty_maybe_improper_list(integer(), list())
+
 end
