@@ -53,4 +53,32 @@ defmodule Edantic.Support.Types do
   @type t_nonempty_maybe_improper_list_integer_float :: nonempty_maybe_improper_list(integer(), float())
   @type t_nonempty_maybe_improper_list_integer_list :: nonempty_maybe_improper_list(integer(), list())
 
+  @type t_some_atom :: :some_atom
+  @type t_true :: true
+  @type t_false :: false
+  @type t_nil :: nil
+
+  @type t_empty_bin :: <<>>
+  @type t_bin :: <<_::7,_::_*9>>
+
+  @type t_int :: 5
+  @type t_int_range :: 5..7
+
+  @type t_list_integer_lit :: [integer()]
+  @type t_list_empty_lit :: []
+  @type t_nonempty_list_lit :: [...]
+  @type t_nonempty_list_integer_lit :: [integer(), ...]
+
+  @type t_keyword_list_lit :: [foo: integer(), bar: integer()]
+
+  @type t_map_emply_lit :: %{}
+  @type t_map_atom_key_lit :: %{foo: integer(), bar: integer()}
+  @type t_map_lit :: %{
+    required(:a) => integer(),
+    required(:b) => tuple(),
+    optional(:c) => list()
+  }
+
+  @type t_map_overlapping_lit :: %{required(:a|:b) => 1, required(:b|:c) => 1}
+
 end

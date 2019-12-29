@@ -22,10 +22,26 @@ defmodule Edantic do
     {:error, {"cannot cast data to none()", type, data}}
   end
 
-  # atom()
+  # atom() and concrete atoms
 
-  def cast_to_type({:type, _, :atom, _} = type, data) do
-    {:error, {"cannot cast data to atom()", type, data}}
+  def cast_to_type({:atom, _, true}, true) do
+    {:ok, true}
+  end
+
+  def cast_to_type({:atom, _, false}, false) do
+    {:ok, false}
+  end
+
+  def cast_to_type({:atom, _, nil}, nil) do
+    {:ok, nil}
+  end
+
+  def cast_to_type({:atom, _, atom} = type, data) when is_binary(data) do
+    if data == to_string(atom) do
+      {:ok, atom}
+    else
+      {:error, {"cannot cast data to atom :#{atom}", type, data}}
+    end
   end
 
   # map()
@@ -34,8 +50,18 @@ defmodule Edantic do
     {:ok, data}
   end
 
+  def cast_to_type({:type, _, :map, []}, data) when data == %{} do
+    {:ok, %{}}
+  end
 
-  def cast_to_type({:type, _, :map, :any} = type, data) do
+  def cast_to_type({:type, _, :map, types} = type, %{} = data) when is_list(types) and length(types) > 0 do
+    case cast_map(%{}, types, Map.to_list(data)) do
+      {:ok, _} = res -> res
+      :error -> {:error, {"cannot cast data to map()", type, data}}
+    end
+  end
+
+  def cast_to_type({:type, _, :map, _} = type, data) do
     {:error, {"cannot cast data to map()", type, data}}
   end
 
@@ -73,17 +99,18 @@ defmodule Edantic do
     {:error, {"cannot cast data to tuple()", type, data}}
   end
 
+  def cast_to_type({:type, _, :tuple, types} = type, data) when is_list(data) do
+    case cast_tuple([], types, data) do
+      {:ok, _} = res -> res
+      :error -> {:error, {"cannot cast data to tuple()", type, data}}
+    end
+  end
+
+
   # float()
 
   def cast_to_type({:type, _, :float, _}, data) when is_number(data) do
     {:ok, data / 1}
-  end
-
-  def cast_to_type({:type, _, :float, _} = type, data) when is_binary(data) do
-    case Float.parse(data) do
-      {number, ""} -> {:ok, number}
-      _ -> {:error, {"cannot cast data to float()", type, data}}
-    end
   end
 
   def cast_to_type({:type, _, :float, _} = type, data) do
@@ -91,6 +118,24 @@ defmodule Edantic do
   end
 
   # integer()
+
+  def cast_to_type({:integer, 0, val} = type, data) do
+    cast_to_integer(
+      type,
+      "integer value(#{val})",
+      fn n -> n == val end,
+      data
+    )
+  end
+
+  def cast_to_type({:type, _, :range, [{:integer, _, from}, {:integer, _, to}]} = type, data) do
+    cast_to_integer(
+      type,
+      "integer range (#{from}..#{to})",
+      fn n -> n >= from and n <= to end,
+      data
+    )
+  end
 
   def cast_to_type({:type, _, :integer, _} = type, data) do
     cast_to_integer(
@@ -134,7 +179,22 @@ defmodule Edantic do
     )
   end
 
+  # binaries
+
+  def cast_to_type({:type, _, :binary, [{:integer, _, m}, {:integer, _, n}]} = type, data) when is_binary(data) and m >=0 and n >= 0 do
+    var_part_len = bit_size(data) - m
+    if var_part_len >= 0 and ((n == 0 and var_part_len == 0) or (n > 0 and rem(var_part_len, n) == 0)) do
+      {:ok, data}
+    else
+      {:error, {"cannot cast data to <<_::#{m}, _::_*#{n}>>", type, data}}
+    end
+  end
+
   # list()
+
+  def cast_to_type({:type, _, :nil, []}, []) do
+    {:ok, []}
+  end
 
   def cast_to_type({:type, _, :list, []}, data) when is_list(data) do
     {:ok, data}
@@ -209,10 +269,91 @@ defmodule Edantic do
     {:error, {"cannot cast data to nonempty_maybe_improper_list()", type, data}}
   end
 
+  # union
+
+  def cast_to_type({:type, _, :union, types} = type, data) do
+    case cast_to_one_of(types, data) do
+      {:ok, _} = res -> res
+      :error ->  {:error, {"cannot cast data to union type", type, data}}
+    end
+  end
+
   # fallback()
 
   def cast_to_type(type, data) do
     {:error, {"cannot cast data", type, data}}
+  end
+
+  #############################################################################
+
+  defp cast_map(casted, types, []) do
+    if skipped_required_keys?(casted, types) do
+      :error
+    else
+      map =
+        casted
+        |> Map.values()
+        |> List.flatten()
+        |> Map.new()
+      {:ok, map}
+    end
+  end
+
+  defp cast_map(casted, types, [key_val | rest]) do
+    matched = cast_map_elem(%{}, types, key_val)
+    if Enum.empty?(matched) do
+      :error
+    else
+      new_casted = Map.merge(casted, matched, fn _, kv1, kv2 -> [kv1, kv2] end)
+      cast_map(new_casted, types, rest)
+    end
+  end
+
+  defp skipped_required_keys?(casted, types) do
+    Enum.any?(types, fn
+      {:type, _, :map_field_exact, _} = t -> not Map.has_key?(casted, t)
+      {:type, _, :map_field_assoc, _} -> false
+    end)
+  end
+
+  defp cast_map_elem(matched, [], _key_val) do
+    matched
+  end
+
+  defp cast_map_elem(matched, [{:type, _, _assoc_type, [key_type, val_type]} = type | rest], {key, val}) do
+    with {:ok, key_casted} <- cast_to_type(key_type, key),
+      {:ok, val_casted} <- cast_to_type(val_type, val)
+    do
+      cast_map_elem(Map.put(matched, type, [{key_casted, val_casted}]), rest, {key, val})
+    else
+      _ -> cast_map_elem(matched, rest, {key, val})
+    end
+  end
+
+  defp cast_tuple(casted, [], []) do
+    {:ok, casted |> Enum.reverse() |> List.to_tuple()}
+  end
+
+  defp cast_tuple(casted, [type| types], [el | els]) do
+    case cast_to_type(type, el) do
+      {:ok, casted_el} -> cast_tuple([casted_el | casted], types, els)
+      {:error, _} -> :error
+    end
+  end
+
+  defp cast_tuple(_, _, _) do
+    :error
+  end
+
+  defp cast_to_one_of([], _data) do
+    :error
+  end
+
+  defp cast_to_one_of([type | types], data) do
+    case cast_to_type(type, data) do
+      {:ok, _} = res -> res
+      {:error, _} -> cast_to_one_of(types, data)
+    end
   end
 
   defp cast_list_to_type(_type, _name, casted, []) do
@@ -226,30 +367,12 @@ defmodule Edantic do
     end
   end
 
-  defp cast_to_integer(type, name, valid?, data) when is_integer(data) do
-    if valid?.(data) do
-      {:ok, data}
-    else
-      {:error, {"cannot cast data to #{name}", type, data}}
-    end
-  end
 
-  defp cast_to_integer(type, name, valid?, data) when is_float(data) do
+  defp cast_to_integer(type, name, valid?, data) when is_number(data) do
     if trunc(data) == data and valid?.(trunc(data)) do
       {:ok, trunc(data)}
     else
       {:error, {"cannot cast data to #{name}", type, data}}
-    end
-  end
-
-  defp cast_to_integer(type, name, valid?, data) when is_binary(data) do
-    with {number, ""} <- Float.parse(data),
-      true <- trunc(number) == number,
-      true <- valid?.(trunc(number))
-    do
-      {:ok, trunc(number)}
-    else
-      _ -> {:error, {"cannot cast data to #{name}", type, data}}
     end
   end
 
