@@ -109,4 +109,20 @@ defmodule Edantic.Support.Types do
   @type t_par(a) :: {Par.t(a, integer()), Par.t(a, list())}
   @type t_par_spec :: t_par(:ok)
 
+
+  defmodule Person do
+    defstruct [
+      :age, :name, :department
+    ]
+
+    @type first_name() :: String.t
+    @type second_name() :: String.t
+
+    @type t :: %__MODULE__{
+      age: non_neg_integer(),
+      name: {first_name(), second_name()},
+      department: :finance | :it
+    }
+  end
+
 end

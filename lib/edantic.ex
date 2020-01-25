@@ -205,6 +205,10 @@ defmodule Edantic do
 
   # binaries
 
+  def cast_to_type_real(e, {:type, _, :binary, []}, data) do
+    cast_to_type(e, {:type, 0, :binary, [{:integer, 0, 0}, {:integer, 0, 8}]}, data)
+  end
+
   def cast_to_type_real(_e, {:type, _, :binary, [{:integer, _, m}, {:integer, _, n}]} = type, data) when is_binary(data) and m >=0 and n >= 0 do
     var_part_len = bit_size(data) - m
     if var_part_len >= 0 and ((n == 0 and var_part_len == 0) or (n > 0 and rem(var_part_len, n) == 0)) do
@@ -314,6 +318,13 @@ defmodule Edantic do
     specified_type = Edantic.Spec.specify(type, vars, args)
     cast_to_type(e, specified_type, data)
   end
+
+  #############################################################################
+
+  # Shortcuts
+
+  {:type, 213, :binary, []}
+
 
   # fallback()
 

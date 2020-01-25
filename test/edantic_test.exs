@@ -2,6 +2,8 @@ defmodule EdanticTest do
   use ExUnit.Case
 
   alias Edantic.Support.Types
+  alias Edantic.Support.Types.Person
+
 
   test "cast: any()" do
     {e, t} = Types.t(:t_any)
@@ -456,4 +458,23 @@ defmodule EdanticTest do
     assert {:ok, {{:ok, 4}, {:ok, []}}} =  Edantic.cast_to_type(e, t, [["ok", 4], ["ok", []]])
   end
 
+  test "cast: common" do
+
+    data = %{
+      "age" => 23,
+      "name" => ["girolamo", "savonarola"],
+      "department" => "it"
+    }
+
+    result = %Person{
+      age: 23,
+      name: {"girolamo", "savonarola"},
+      department: :it
+    }
+
+    assert {:ok, result} == Edantic.cast(Person, :t, data)
+
+  end
+
 end
+

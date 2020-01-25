@@ -2,22 +2,19 @@ defmodule Edantic.Map do
   @moduledoc false
 
   def cast_map(_e, casted, types, []) do
-    skipped_keys = skipped_required_keys(casted, types)
+    struct_name = find_struct_name(types, casted)
 
-    case skipped_keys do
-      [] ->
+    if struct_name do
+      casted
+      |> casted_to_map()
+      |> try_cast_to_struct(struct_name)
+    else
+      if missing_required_key?(casted, types) do
+        :error
+      else
         map = casted_to_map(casted)
         {:ok, map}
-      [{:type, _, :map_field_exact, [{:atom, _, :__struct__}, {:atom, _, module}]}] ->
-        if module_exist?(module) do
-          map =
-            casted
-            |> casted_to_map()
-            |> Map.put(:__struct__, module)
-          {:ok, map}
-        end
-      _ ->
-        :error
+      end
     end
   end
 
@@ -31,11 +28,32 @@ defmodule Edantic.Map do
     end
   end
 
-  defp skipped_required_keys(casted, types) do
-    Enum.filter(types, fn
+  defp missing_required_key?(casted, types) do
+    Enum.any?(types, fn
       {:type, _, :map_field_exact, _} = t -> not Map.has_key?(casted, t)
       {:type, _, :map_field_assoc, _} -> false
     end)
+  end
+
+  defp try_cast_to_struct(map, struct_name) do
+    {:ok, struct!(struct_name, map)}
+  rescue
+    _ ->
+      :error
+  end
+
+  defp find_struct_name([], _) do
+    nil
+  end
+  defp find_struct_name([{:type, _, :map_field_exact, [{:atom, _, :__struct__}, {:atom, _, module}]} = type | _types], casted) do
+    if not Map.has_key?(casted, type) do
+      module
+    else
+      nil
+    end
+  end
+  defp find_struct_name([_ | types], casted) do
+    find_struct_name(types, casted)
   end
 
   defp casted_to_map(casted) do
