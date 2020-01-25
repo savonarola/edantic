@@ -1,8 +1,8 @@
 defmodule Edantic.Support.Types do
 
   def t(name) do
-    {:ok, type} = Edantic.find_typespec(__MODULE__, name)
-    type
+    {:ok, {type, []}} = Edantic.find_typespec(__MODULE__, name, 0)
+    {Edantic.new(__MODULE__), type}
   end
 
   @type t_any :: any()
@@ -80,5 +80,33 @@ defmodule Edantic.Support.Types do
   }
 
   @type t_map_overlapping_lit :: %{required(:a|:b) => 1, required(:b|:c) => 1}
+
+  @type t_tuple_empty_lit :: {}
+
+  @type t_tuple_lit :: {:ok, integer()}
+
+  defmodule St do
+    defstruct [
+      foo: 4,
+      bar: {}
+    ]
+
+    @type t :: %__MODULE__{
+      foo: integer(),
+      bar: {}
+    }
+  end
+
+  @type t_st :: %St{}
+  @type t_st_with_constr :: St.t
+
+  @type t_user :: t_integer()
+
+  defmodule Par do
+    @type t(a, b) :: {a, b}
+  end
+
+  @type t_par(a) :: {Par.t(a, integer()), Par.t(a, list())}
+  @type t_par_spec :: t_par(:ok)
 
 end
