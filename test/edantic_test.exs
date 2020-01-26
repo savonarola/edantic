@@ -474,6 +474,14 @@ defmodule EdanticTest do
 
     assert {:ok, result} == Edantic.cast(Person, :t, data)
 
+    data_bad_department = %{
+      "age" => 23,
+      "name" => ["girolamo", "savonarola"],
+      "department" => "unknown"
+    }
+
+    assert {:error, _} = Edantic.cast(Person, :t, data_bad_department)
+
   end
 
 end

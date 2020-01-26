@@ -1,3 +1,11 @@
+[![Build Status](https://travis-ci.org/savonarola/edantic.svg?branch=master)](https://travis-ci.org/savonarola/edantic)
+[![Coverage Status](https://coveralls.io/repos/github/savonarola/edantic/badge.svg?branch=master&1504538909)](https://coveralls.io/github/savonarola/edantic?branch=master)
+
+
+<a href="https://funbox.ru">
+  <img src="http://funbox.ru/badges/sponsored_by_funbox_compact.svg" alt="Sponsored by FunBox" width=250 />
+</a>
+
 # Edantic
 
 Eduntic is a library for casting «plain» JSON-originated data into Elixir data structs
@@ -34,7 +42,7 @@ data = %{
 }
 ```
 
-With Edantic we can simultaneously validate this data and convert into Elixir structures:
+With Edantic we can simultaneously validate this data and convert it into Elixir structures:
 
 ```elixir
 
@@ -51,10 +59,10 @@ person == %Person{
 
 By «JSON-originated» data is denoted the following type `t`:
 
-```
+```elixir
 @type key :: String.t
 @type value :: String.t | nil | boolean | integer | float | %{optional(key) => value} | [value]
-@type t :: %{optional(key) => value}
+@type t :: value
 ```
 
 ## Primitive convertions
