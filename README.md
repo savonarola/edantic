@@ -92,6 +92,28 @@ Since plain data structures are rather poor, there are some automatic enrichment
 * Maps can be casted to arbitrary struct whith the same set of fields `%{a: 123} -> %SomeSt{a: 123}`
 if fields pass validations.
 
+## Usage in releases
+
+Since type info is located in seperate beam chunks which are stripped by default, be sure your releases
+do not strip them.
+
+For example, by setting `strip_beams` option to `false`.
+
+```elixir
+  def project do
+    [
+      ...
+      deps: deps(),
+      releases: [
+        release_name: [
+          strip_beams: false,
+          ...
+        ]
+      ]
+    ]
+  end
+```
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
