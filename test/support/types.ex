@@ -1,5 +1,4 @@
 defmodule Edantic.Support.Types do
-
   def t(name) do
     {:ok, {type, []}} = Edantic.find_typespec(__MODULE__, name, 0)
     {Edantic.new(__MODULE__), type}
@@ -50,8 +49,10 @@ defmodule Edantic.Support.Types do
   @type t_nonempty_improper_list_integer_list :: nonempty_improper_list(integer(), list())
 
   @type t_nonempty_maybe_improper_list :: nonempty_maybe_improper_list()
-  @type t_nonempty_maybe_improper_list_integer_float :: nonempty_maybe_improper_list(integer(), float())
-  @type t_nonempty_maybe_improper_list_integer_list :: nonempty_maybe_improper_list(integer(), list())
+  @type t_nonempty_maybe_improper_list_integer_float ::
+          nonempty_maybe_improper_list(integer(), float())
+  @type t_nonempty_maybe_improper_list_integer_list ::
+          nonempty_maybe_improper_list(integer(), list())
 
   @type t_some_atom :: :some_atom
   @type t_true :: true
@@ -59,7 +60,7 @@ defmodule Edantic.Support.Types do
   @type t_nil :: nil
 
   @type t_empty_bin :: <<>>
-  @type t_bin :: <<_::7,_::_*9>>
+  @type t_bin :: <<_::7, _::_*9>>
 
   @type t_int :: 5
   @type t_int_range :: 5..7
@@ -74,31 +75,29 @@ defmodule Edantic.Support.Types do
   @type t_map_emply_lit :: %{}
   @type t_map_atom_key_lit :: %{foo: integer(), bar: integer()}
   @type t_map_lit :: %{
-    required(:a) => integer(),
-    required(:b) => tuple(),
-    optional(:c) => list()
-  }
+          required(:a) => integer(),
+          required(:b) => tuple(),
+          optional(:c) => list()
+        }
 
-  @type t_map_overlapping_lit :: %{required(:a|:b) => 1, required(:b|:c) => 1}
+  @type t_map_overlapping_lit :: %{required(:a | :b) => 1, required(:b | :c) => 1}
 
   @type t_tuple_empty_lit :: {}
 
   @type t_tuple_lit :: {:ok, integer()}
 
   defmodule St do
-    defstruct [
-      foo: 4,
-      bar: {}
-    ]
+    defstruct foo: 4,
+              bar: {}
 
     @type t :: %__MODULE__{
-      foo: integer(),
-      bar: {}
-    }
+            foo: integer(),
+            bar: {}
+          }
   end
 
   @type t_st :: %St{}
-  @type t_st_with_constr :: St.t
+  @type t_st_with_constr :: St.t()
 
   @type t_user :: t_integer()
 
@@ -155,17 +154,18 @@ defmodule Edantic.Support.Types do
 
   defmodule Person do
     defstruct [
-      :age, :name, :department
+      :age,
+      :name,
+      :department
     ]
 
-    @type first_name() :: String.t
-    @type second_name() :: String.t
+    @type first_name() :: String.t()
+    @type second_name() :: String.t()
 
     @type t :: %__MODULE__{
-      age: non_neg_integer(),
-      name: {first_name(), second_name()},
-      department: :finance | :it
-    }
+            age: non_neg_integer(),
+            name: {first_name(), second_name()},
+            department: :finance | :it
+          }
   end
-
 end

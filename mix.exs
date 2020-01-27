@@ -9,13 +9,10 @@ defmodule Edantic.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-
       test_coverage: [tool: ExCoveralls],
-
       source_url: "https://github.com/savonarola/edantic",
       description: description(),
       package: package(),
-
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
@@ -64,5 +61,4 @@ defmodule Edantic.MixProject do
       {:excoveralls, "~> 0.5", only: :test}
     ]
   end
-
 end

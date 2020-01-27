@@ -20,6 +20,7 @@ defmodule Edantic.Map do
 
   def cast_map(e, casted, types, [key_val | rest]) do
     matched = cast_map_elem(e, %{}, types, key_val)
+
     if Enum.empty?(matched) do
       {:bad_key_val, key_val}
     else
@@ -45,13 +46,21 @@ defmodule Edantic.Map do
   defp find_struct_name([], _) do
     nil
   end
-  defp find_struct_name([{:type, _, :map_field_exact, [{:atom, _, :__struct__}, {:atom, _, module}]} = type | _types], casted) do
+
+  defp find_struct_name(
+         [
+           {:type, _, :map_field_exact, [{:atom, _, :__struct__}, {:atom, _, module}]} = type
+           | _types
+         ],
+         casted
+       ) do
     if not Map.has_key?(casted, type) do
       module
     else
       nil
     end
   end
+
   defp find_struct_name([_ | types], casted) do
     find_struct_name(types, casted)
   end
@@ -71,14 +80,17 @@ defmodule Edantic.Map do
     matched
   end
 
-  defp cast_map_elem(e, matched, [{:type, _, _assoc_type, [key_type, val_type]} = type | rest], {key, val}) do
+  defp cast_map_elem(
+         e,
+         matched,
+         [{:type, _, _assoc_type, [key_type, val_type]} = type | rest],
+         {key, val}
+       ) do
     with {:ok, key_casted} <- Edantic.cast_to_type(e, key_type, key),
-      {:ok, val_casted} <- Edantic.cast_to_type(e, val_type, val)
-    do
+         {:ok, val_casted} <- Edantic.cast_to_type(e, val_type, val) do
       cast_map_elem(e, Map.put(matched, type, [{key_casted, val_casted}]), rest, {key, val})
     else
       _ -> cast_map_elem(e, matched, rest, {key, val})
     end
   end
-
 end

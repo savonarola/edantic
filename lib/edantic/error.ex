@@ -1,7 +1,5 @@
 defmodule Edantic.Error do
-  defstruct [
-    message: ""
-  ]
+  defstruct message: ""
 
   alias __MODULE__, as: Error
 

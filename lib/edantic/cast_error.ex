@@ -1,10 +1,8 @@
 defmodule Edantic.CastError do
-  defstruct [
-    type: nil,
-    data: nil,
-    message: "",
-    previous_error: nil
-  ]
+  defstruct type: nil,
+            data: nil,
+            message: "",
+            previous_error: nil
 
   alias __MODULE__, as: CastError
 

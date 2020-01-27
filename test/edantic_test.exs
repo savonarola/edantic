@@ -4,7 +4,6 @@ defmodule EdanticTest do
   alias Edantic.Support.Types
   alias Edantic.Support.Types.Person
 
-
   test "cast: any()" do
     {e, t} = Types.t(:t_any)
     assert {:ok, "foo"} = Edantic.cast_to_type(e, t, "foo")
@@ -98,12 +97,9 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, 5)
     assert {:error, _} = Edantic.cast_to_type(e, t, "123")
 
-
     assert {:ok, -5} = Edantic.cast_to_type(e, t, -5)
     assert {:ok, -5} = Edantic.cast_to_type(e, t, -5.0)
-
   end
-
 
   test "cast: non_neg_integer()" do
     {e, t} = Types.t(:t_non_neg_integer)
@@ -116,7 +112,6 @@ defmodule EdanticTest do
 
     assert {:ok, 5} = Edantic.cast_to_type(e, t, 5)
     assert {:ok, 5} = Edantic.cast_to_type(e, t, 5.0)
-
   end
 
   test "cast: pos_integer()" do
@@ -129,10 +124,8 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, 0)
     assert {:error, _} = Edantic.cast_to_type(e, t, "123")
 
-
     assert {:ok, 5} = Edantic.cast_to_type(e, t, 5)
     assert {:ok, 5} = Edantic.cast_to_type(e, t, 5.0)
-
   end
 
   test "cast: list()" do
@@ -161,21 +154,18 @@ defmodule EdanticTest do
   end
 
   test "cast: nonempty_list()" do
-    for {e, t} <-[Types.t(:t_nonempty_list), Types.t(:t_nonempty_list_lit)] do
-
+    for {e, t} <- [Types.t(:t_nonempty_list), Types.t(:t_nonempty_list_lit)] do
       assert {:error, _} = Edantic.cast_to_type(e, t, "foo")
       assert {:error, _} = Edantic.cast_to_type(e, t, %{})
       assert {:error, _} = Edantic.cast_to_type(e, t, 1.5)
       assert {:error, _} = Edantic.cast_to_type(e, t, [])
 
       assert {:ok, [5, "foo"]} = Edantic.cast_to_type(e, t, [5, "foo"])
-
     end
   end
 
   test "cast: nonempty_list(integer())" do
-    for {e, t} <-[Types.t(:t_nonempty_list_of_integer), Types.t(:t_nonempty_list_integer_lit)] do
-
+    for {e, t} <- [Types.t(:t_nonempty_list_of_integer), Types.t(:t_nonempty_list_integer_lit)] do
       assert {:error, _} = Edantic.cast_to_type(e, t, "foo")
       assert {:error, _} = Edantic.cast_to_type(e, t, %{})
       assert {:error, _} = Edantic.cast_to_type(e, t, 1.5)
@@ -184,7 +174,6 @@ defmodule EdanticTest do
 
       assert {:ok, [5]} = Edantic.cast_to_type(e, t, [5])
       assert {:ok, [5, 6, 7]} = Edantic.cast_to_type(e, t, [5, 6.0, 7])
-
     end
   end
 
@@ -260,7 +249,6 @@ defmodule EdanticTest do
     assert {:ok, [5, "foo"]} = Edantic.cast_to_type(e, t, [5, "foo"])
   end
 
-
   test "cast: nonempty_maybe_improper_list(integer(), float())" do
     {e, t} = Types.t(:t_nonempty_maybe_improper_list_integer_float)
 
@@ -317,7 +305,6 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, "bar")
     assert {:ok, "ok"} = Edantic.cast_to_type(e, t, "ok")
   end
-
 
   test "cast: int ranges" do
     {e, t} = Types.t(:t_int)
@@ -404,8 +391,8 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, %{})
     assert {:error, _} = Edantic.cast_to_type(e, t, %{foo: 1, bar: 2, quux: 3})
 
-    assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"a" => 1, "b" => [1,2]})
-    assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"a" => 1, "b" => [1,2], "c" => []})
+    assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"a" => 1, "b" => [1, 2]})
+    assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"a" => 1, "b" => [1, 2], "c" => []})
     assert {:error, _} = Edantic.cast_to_type(e, t, %{"a" => 1, "c" => []})
   end
 
@@ -416,13 +403,12 @@ defmodule EdanticTest do
     assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"a" => 1, "c" => 1})
     assert {:ok, %{}} = Edantic.cast_to_type(e, t, %{"b" => 1})
     assert {:error, _} = Edantic.cast_to_type(e, t, %{"a" => 1})
-
   end
 
   test "cast: {}" do
     {e, t} = Types.t(:t_tuple_empty_lit)
 
-    assert {:error, _} = Edantic.cast_to_type(e, t, {1,2})
+    assert {:error, _} = Edantic.cast_to_type(e, t, {1, 2})
     assert {:ok, {}} = Edantic.cast_to_type(e, t, [])
   end
 
@@ -436,31 +422,48 @@ defmodule EdanticTest do
   test "cast: %St{}" do
     {e, t} = Types.t(:t_st)
 
-    assert {:ok, _} = Edantic.cast_to_type(e, t, %{"foo" => 4, "bar" => [], "__struct__" => "Elixir.Edantic.Support.Types.St"})
+    assert {:ok, _} =
+             Edantic.cast_to_type(e, t, %{
+               "foo" => 4,
+               "bar" => [],
+               "__struct__" => "Elixir.Edantic.Support.Types.St"
+             })
   end
 
   test "cast: %St{} with constraints" do
     {e, t} = Types.t(:t_st_with_constr)
 
-    assert {:ok, %Types.St{foo: 4, bar: {}}} = Edantic.cast_to_type(e, t, %{"foo" => 4, "bar" => [], "__struct__" => "Elixir.Edantic.Support.Types.St"})
-    assert {:error, _} = Edantic.cast_to_type(e, t, %{"foo" => 4, "bar" => [1,3], "__struct__" => "Elixir.Edantic.Support.Types.St"})
+    assert {:ok, %Types.St{foo: 4, bar: {}}} =
+             Edantic.cast_to_type(e, t, %{
+               "foo" => 4,
+               "bar" => [],
+               "__struct__" => "Elixir.Edantic.Support.Types.St"
+             })
+
+    assert {:error, _} =
+             Edantic.cast_to_type(e, t, %{
+               "foo" => 4,
+               "bar" => [1, 3],
+               "__struct__" => "Elixir.Edantic.Support.Types.St"
+             })
   end
 
   test "cast: %St{} auto" do
     {e, t} = Types.t(:t_st_with_constr)
 
-    assert {:ok, %Types.St{foo: 4, bar: {}}} = Edantic.cast_to_type(e, t, %{"foo" => 4, "bar" => []})
+    assert {:ok, %Types.St{foo: 4, bar: {}}} =
+             Edantic.cast_to_type(e, t, %{"foo" => 4, "bar" => []})
   end
 
   test "cast: user_types" do
     {e, t} = Types.t(:t_user)
-    assert {:ok, 4} =  Edantic.cast_to_type(e, t, 4)
+    assert {:ok, 4} = Edantic.cast_to_type(e, t, 4)
   end
 
   test "cast: parametric" do
     {e, t} = Types.t(:t_par_spec)
 
-    assert {:ok, {{:ok, 4}, {:ok, []}}} =  Edantic.cast_to_type(e, t, [["ok", 4], ["ok", []]])
+    assert {:ok, {{:ok, 4}, {:ok, []}}} = Edantic.cast_to_type(e, t, [["ok", 4], ["ok", []]])
   end
 
   test "cast: term()" do
@@ -560,7 +563,6 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, [1, {1, 3}])
   end
 
-
   test "cast: keyword()" do
     {e, t} = Types.t(:t_keyword)
 
@@ -569,7 +571,6 @@ defmodule EdanticTest do
 
     assert {:error, _} = Edantic.cast_to_type(e, t, [[1, 5]])
   end
-
 
   test "cast: keyword(integer())" do
     {e, t} = Types.t(:t_keyword_integer)
@@ -625,7 +626,6 @@ defmodule EdanticTest do
     assert {:error, _} = Edantic.cast_to_type(e, t, "abc")
   end
 
-
   test "cast: node()" do
     {e, t} = Types.t(:t_node)
 
@@ -637,7 +637,6 @@ defmodule EdanticTest do
   end
 
   test "cast: common" do
-
     data = %{
       "age" => 23,
       "name" => ["girolamo", "savonarola"],
@@ -660,6 +659,4 @@ defmodule EdanticTest do
 
     assert {:error, _} = Edantic.cast(Person, :t, data_bad_department)
   end
-
 end
-

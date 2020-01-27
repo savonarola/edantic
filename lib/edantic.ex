@@ -1,14 +1,11 @@
 defmodule Edantic do
-
   alias Code.Typespec
   alias Edantic.CastError
   alias Edantic.Error
   alias Edantic.Json
 
-  defstruct [
-    module: nil,
-    path: []
-  ]
+  defstruct module: nil,
+            path: []
 
   @type t :: %Edantic{}
 
@@ -16,7 +13,7 @@ defmodule Edantic do
     %Edantic{module: module}
   end
 
-  @spec cast(module, atom, Json.t) :: {:ok, term()} | {:error, term()}
+  @spec cast(module, atom, Json.t()) :: {:ok, term()} | {:error, term()}
   def cast(module, type, data) do
     if Json.valid?(data) do
       case find_typespec(module, type, 0) do
@@ -89,12 +86,22 @@ defmodule Edantic do
     {:ok, %{}}
   end
 
-  def cast_to_type_real(e, {:type, _, :map, types} = type, %{} = data) when is_list(types) and length(types) > 0 do
+  def cast_to_type_real(e, {:type, _, :map, types} = type, %{} = data)
+      when is_list(types) and length(types) > 0 do
     case Edantic.Map.cast_map(e, %{}, types, Map.to_list(data)) do
-      {:ok, _} = res -> res
-      :required_keys_missing -> cast_error("required key-value pairs are missing in the map", type, data)
-      {:bad_key_val, {key, val}} -> cast_error("key-value pair does not match to any of the specified for the map", type, %{key => val})
-      {:struct_error, struct_name, e, map} -> cast_error("map can't be casted to %#{struct_name}{}: #{e}", type, map)
+      {:ok, _} = res ->
+        res
+
+      :required_keys_missing ->
+        cast_error("required key-value pairs are missing in the map", type, data)
+
+      {:bad_key_val, {key, val}} ->
+        cast_error("key-value pair does not match to any of the specified for the map", type, %{
+          key => val
+        })
+
+      {:struct_error, struct_name, e, map} ->
+        cast_error("map can't be casted to %#{struct_name}{}: #{e}", type, map)
     end
   end
 
@@ -122,7 +129,11 @@ defmodule Edantic do
 
   # struct()
 
-  def cast_to_type_real(_e, {:remote_type, _, [{:atom, _, :elixir}, {:atom, _, :struct}, _]} = type, data) do
+  def cast_to_type_real(
+        _e,
+        {:remote_type, _, [{:atom, _, :elixir}, {:atom, _, :struct}, _]} = type,
+        data
+      ) do
     cast_error("cannot cast data to an unknown struct()", type, data)
   end
 
@@ -138,9 +149,14 @@ defmodule Edantic do
 
   def cast_to_type_real(e, {:type, _, :tuple, types} = type, data) when is_list(data) do
     case cast_tuple(e, [], types, data) do
-      {:ok, _} = res -> res
-      :different_length -> cast_error("cannot cast list to a tuple of different size", type, data)
-      {:element_error, n, err} -> cast_error("cannot cast list element ##{n} to tuple element", type, data, err)
+      {:ok, _} = res ->
+        res
+
+      :different_length ->
+        cast_error("cannot cast list to a tuple of different size", type, data)
+
+      {:element_error, n, err} ->
+        cast_error("cannot cast list element ##{n} to tuple element", type, data, err)
     end
   end
 
@@ -165,7 +181,11 @@ defmodule Edantic do
     )
   end
 
-  def cast_to_type_real(_e, {:type, _, :range, [{:integer, _, from}, {:integer, _, to}]} = type, data) do
+  def cast_to_type_real(
+        _e,
+        {:type, _, :range, [{:integer, _, from}, {:integer, _, to}]} = type,
+        data
+      ) do
     cast_to_integer(
       type,
       "integer range (#{from}..#{to})",
@@ -225,9 +245,16 @@ defmodule Edantic do
     end
   end
 
-  def cast_to_type_real(_e, {:type, _, :binary, [{:integer, _, m}, {:integer, _, n}]} = type, data) when is_binary(data) and m >=0 and n >= 0 do
+  def cast_to_type_real(
+        _e,
+        {:type, _, :binary, [{:integer, _, m}, {:integer, _, n}]} = type,
+        data
+      )
+      when is_binary(data) and m >= 0 and n >= 0 do
     var_part_len = bit_size(data) - m
-    if var_part_len >= 0 and ((n == 0 and var_part_len == 0) or (n > 0 and rem(var_part_len, n) == 0)) do
+
+    if var_part_len >= 0 and
+         ((n == 0 and var_part_len == 0) or (n > 0 and rem(var_part_len, n) == 0)) do
       {:ok, data}
     else
       cast_error("cannot cast data to binary <<_::#{m}, _::_*#{n}>>", type, data)
@@ -236,7 +263,7 @@ defmodule Edantic do
 
   # list()
 
-  def cast_to_type_real(_e, {:type, _, :nil, []}, []) do
+  def cast_to_type_real(_e, {:type, _, nil, []}, []) do
     {:ok, []}
   end
 
@@ -272,10 +299,18 @@ defmodule Edantic do
     {:ok, data}
   end
 
-  def cast_to_type_real(e, {:type, _, :maybe_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) do
+  def cast_to_type_real(
+        e,
+        {:type, _, :maybe_improper_list, [element_type, last_element_type]} = type,
+        data
+      )
+      when is_list(data) do
     case cast_to_type(e, last_element_type, []) do
-      {:ok, _} -> cast_list_to_type(e, element_type, "maybe_improper_list()", data)
-      {:error, _} -> cast_error("cannot cast any data to a truly maybe_improper_list()", type, data)
+      {:ok, _} ->
+        cast_list_to_type(e, element_type, "maybe_improper_list()", data)
+
+      {:error, _} ->
+        cast_error("cannot cast any data to a truly maybe_improper_list()", type, data)
     end
   end
 
@@ -285,10 +320,18 @@ defmodule Edantic do
 
   # nonempty_improper_list()
 
-  def cast_to_type_real(e, {:type, _, :nonempty_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) and length(data) > 0 do
+  def cast_to_type_real(
+        e,
+        {:type, _, :nonempty_improper_list, [element_type, last_element_type]} = type,
+        data
+      )
+      when is_list(data) and length(data) > 0 do
     case cast_to_type(e, last_element_type, []) do
-      {:ok, _} -> cast_list_to_type(e, element_type, "nonempty_improper_list()", data)
-      {:error, _} -> cast_error("cannot cast any data to a truly nonempty_improper_list()", type, data)
+      {:ok, _} ->
+        cast_list_to_type(e, element_type, "nonempty_improper_list()", data)
+
+      {:error, _} ->
+        cast_error("cannot cast any data to a truly nonempty_improper_list()", type, data)
     end
   end
 
@@ -298,14 +341,23 @@ defmodule Edantic do
 
   # nonempty_maybe_improper_list()
 
-  def cast_to_type_real(_e, {:type, _, :nonempty_maybe_improper_list, []}, data) when is_list(data) and length(data) > 0 do
+  def cast_to_type_real(_e, {:type, _, :nonempty_maybe_improper_list, []}, data)
+      when is_list(data) and length(data) > 0 do
     {:ok, data}
   end
 
-  def cast_to_type_real(e, {:type, _, :nonempty_maybe_improper_list, [element_type, last_element_type]} = type, data) when is_list(data) and length(data) > 0 do
+  def cast_to_type_real(
+        e,
+        {:type, _, :nonempty_maybe_improper_list, [element_type, last_element_type]} = type,
+        data
+      )
+      when is_list(data) and length(data) > 0 do
     case cast_to_type(e, last_element_type, []) do
-      {:ok, _} -> cast_list_to_type(e ,element_type, "nonempty_maybe_improper_list()", data)
-      {:error, _} -> cast_error("cannot cast any data to a truly nonempty_maybe_improper_list()", type, data)
+      {:ok, _} ->
+        cast_list_to_type(e, element_type, "nonempty_maybe_improper_list()", data)
+
+      {:error, _} ->
+        cast_error("cannot cast any data to a truly nonempty_maybe_improper_list()", type, data)
     end
   end
 
@@ -318,7 +370,7 @@ defmodule Edantic do
   def cast_to_type_real(e, {:type, _, :union, types} = type, data) do
     case cast_to_one_of(e, types, data) do
       {:ok, _} = res -> res
-      :error ->  cast_error("cannot cast data to union type", type, data)
+      :error -> cast_error("cannot cast data to union type", type, data)
     end
   end
 
@@ -327,7 +379,8 @@ defmodule Edantic do
   def cast_to_type_real(e, {:remote_type, _, [{:atom, _, mod}, {:atom, _, t}, args]}, data) do
     {:ok, {type, vars}} = find_typespec(mod, t, length(args))
     specified_type = Edantic.Spec.specify(type, vars, args)
-    cast_to_type(e, specified_type, data)  end
+    cast_to_type(e, specified_type, data)
+  end
 
   def cast_to_type_real(e, {:user_type, _, t, args}, data) do
     {:ok, {type, vars}} = find_typespec(e.module, t, length(args))
@@ -493,7 +546,7 @@ defmodule Edantic do
     {:ok, casted |> Enum.reverse() |> List.to_tuple()}
   end
 
-  defp cast_tuple(e, casted, [type| types], [el | els], n) do
+  defp cast_tuple(e, casted, [type | types], [el | els], n) do
     case cast_to_type(e, type, el) do
       {:ok, casted_el} -> cast_tuple(e, [casted_el | casted], types, els, n + 1)
       {:error, err} -> {:element_error, n, err}
@@ -504,7 +557,7 @@ defmodule Edantic do
     :different_length
   end
 
-  defp cast_to_one_of( _, [], _data) do
+  defp cast_to_one_of(_, [], _data) do
     :error
   end
 
@@ -517,8 +570,11 @@ defmodule Edantic do
 
   defp cast_list_to_type(e, type, name, els) do
     case cast_list_elements_to_type(e, type, 0, [], els) do
-      {:ok, _} = res -> res
-      {:error, n, error} -> cast_error("cannot cast list element ##{n} to #{name} element", type, els, error)
+      {:ok, _} = res ->
+        res
+
+      {:error, n, error} ->
+        cast_error("cannot cast list element ##{n} to #{name} element", type, els, error)
     end
   end
 
@@ -548,11 +604,13 @@ defmodule Edantic do
   def find_typespec(module, type, arity) when is_integer(arity) do
     case Typespec.fetch_types(module) do
       {:ok, types} ->
-        case Enum.find(types, fn ({:type, {t, _s, args}}) -> t == type and length(args) == arity end) do
+        case Enum.find(types, fn {:type, {t, _s, args}} -> t == type and length(args) == arity end) do
           {_, {_t, spec, args}} -> {:ok, {spec, args}}
           nil -> :error
         end
-      _ -> :error
+
+      _ ->
+        :error
     end
   end
 
@@ -563,5 +621,4 @@ defmodule Edantic do
   def cast_error(message, type, data, previous_error \\ nil) do
     {:error, CastError.new(message, type, data, previous_error)}
   end
-
 end
