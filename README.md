@@ -8,7 +8,7 @@
 
 # Edantic
 
-Eduntic is a library for casting «plain» JSON-originated data into Elixir data structures
+Edantic is a library for casting «plain» JSON-originated data into Elixir data structures
 with nessesary validations.
 
 ## Example
