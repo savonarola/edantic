@@ -17,7 +17,12 @@ defmodule EdanticTest do
 
   test "cast: atom()" do
     {e, t} = Types.t(:t_atom)
-    assert {:error, _} = Edantic.cast_to_type(e, t, "foo")
+
+    _ = :foo
+    assert {:ok, :foo} = Edantic.cast_to_type(e, t, "foo")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 123)
+    assert {:error, _} = Edantic.cast_to_type(e, t, "sdfsadfdsafdsagnsagasgasgd")
   end
 
   test "cast: map()" do
@@ -458,6 +463,179 @@ defmodule EdanticTest do
     assert {:ok, {{:ok, 4}, {:ok, []}}} =  Edantic.cast_to_type(e, t, [["ok", 4], ["ok", []]])
   end
 
+  test "cast: term()" do
+    {e, t} = Types.t(:t_term)
+    assert {:ok, "foo"} = Edantic.cast_to_type(e, t, "foo")
+  end
+
+  test "cast: arity()" do
+    {e, t} = Types.t(:t_arity)
+    assert {:ok, 15} = Edantic.cast_to_type(e, t, 15)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 1115)
+  end
+
+  test "cast: as_boolean(:ok)" do
+    {e, t} = Types.t(:t_as_boolean_ok)
+    assert {:ok, :ok} = Edantic.cast_to_type(e, t, "ok")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 1115)
+  end
+
+  test "cast: bitstring()" do
+    {e, t} = Types.t(:t_bitstring)
+    assert {:ok, "ok"} = Edantic.cast_to_type(e, t, "ok")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 1115)
+  end
+
+  test "cast: boolean()" do
+    {e, t} = Types.t(:t_boolean)
+    assert {:ok, true} = Edantic.cast_to_type(e, t, true)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 1115)
+  end
+
+  test "cast: byte()" do
+    {e, t} = Types.t(:t_byte)
+    assert {:ok, 15} = Edantic.cast_to_type(e, t, 15)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 1115)
+  end
+
+  test "cast: char()" do
+    {e, t} = Types.t(:t_char)
+    assert {:ok, 1115} = Edantic.cast_to_type(e, t, 1115)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 0x11FFFF)
+  end
+
+  test "cast: charlist()" do
+    {e, t} = Types.t(:t_charlist)
+    assert {:ok, [1115]} = Edantic.cast_to_type(e, t, [1115])
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [0x11FFFF])
+  end
+
+  test "cast: nonempty_charlist()" do
+    {e, t} = Types.t(:t_nonempty_charlist)
+    assert {:ok, [1115]} = Edantic.cast_to_type(e, t, [1115])
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [0x11FFFF])
+    assert {:error, _} = Edantic.cast_to_type(e, t, [])
+  end
+
+  test "cast: fun()" do
+    {e, t} = Types.t(:t_fun)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, "")
+  end
+
+  test "cast: function()" do
+    {e, t} = Types.t(:t_function)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, "")
+  end
+
+  test "cast: identifier()" do
+    {e, t} = Types.t(:t_identifier)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, "")
+  end
+
+  test "cast: iolist()" do
+    {e, t} = Types.t(:t_iolist)
+
+    assert {:ok, [1, "1", [1, "1"]]} = Edantic.cast_to_type(e, t, [1, "1", [1, "1"]])
+    assert {:error, _} = Edantic.cast_to_type(e, t, [1, {1, 3}])
+    assert {:error, _} = Edantic.cast_to_type(e, t, "1")
+  end
+
+  test "cast: iodata()" do
+    {e, t} = Types.t(:t_iodata)
+
+    assert {:ok, [1, "1", [1, "1"]]} = Edantic.cast_to_type(e, t, [1, "1", [1, "1"]])
+    assert {:ok, "1"} = Edantic.cast_to_type(e, t, "1")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [1, {1, 3}])
+  end
+
+
+  test "cast: keyword()" do
+    {e, t} = Types.t(:t_keyword)
+
+    _ = :a
+    assert {:ok, [{:a, 5}]} = Edantic.cast_to_type(e, t, [["a", 5]])
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [[1, 5]])
+  end
+
+
+  test "cast: keyword(integer())" do
+    {e, t} = Types.t(:t_keyword_integer)
+
+    _ = :a
+    assert {:ok, [{:a, 5}]} = Edantic.cast_to_type(e, t, [["a", 5]])
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [["a", "b"]])
+  end
+
+  test "cast: module()" do
+    {e, t} = Types.t(:t_module)
+
+    _ = :foo
+    assert {:ok, :foo} = Edantic.cast_to_type(e, t, "foo")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 123)
+    assert {:error, _} = Edantic.cast_to_type(e, t, "sdfsadfdsafdsagnsagasgasgd")
+  end
+
+  test "cast: mfa()" do
+    {e, t} = Types.t(:t_mfa)
+
+    _ = :foo
+    assert {:ok, {:foo, :foo, 2}} = Edantic.cast_to_type(e, t, ["foo", "foo", 2])
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, ["foo", "bar"])
+  end
+
+  test "cast: no_return()" do
+    {e, t} = Types.t(:t_no_return)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [])
+  end
+
+  test "cast: number()" do
+    {e, t} = Types.t(:t_number)
+
+    assert {:ok, 1} = Edantic.cast_to_type(e, t, 1)
+    assert {:ok, 2.5} = Edantic.cast_to_type(e, t, 2.5)
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [])
+  end
+
+  test "cast: timeout()" do
+    {e, t} = Types.t(:t_timeout)
+
+    assert {:ok, 1} = Edantic.cast_to_type(e, t, 1)
+    assert {:ok, :infinity} = Edantic.cast_to_type(e, t, "infinity")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, [])
+    assert {:error, _} = Edantic.cast_to_type(e, t, -1)
+    assert {:error, _} = Edantic.cast_to_type(e, t, "abc")
+  end
+
+
+  test "cast: node()" do
+    {e, t} = Types.t(:t_node)
+
+    _ = :foo
+    assert {:ok, :foo} = Edantic.cast_to_type(e, t, "foo")
+
+    assert {:error, _} = Edantic.cast_to_type(e, t, 123)
+    assert {:error, _} = Edantic.cast_to_type(e, t, "sdfsadfdsafdsagnsagasgasgd")
+  end
+
   test "cast: common" do
 
     data = %{
@@ -481,7 +659,6 @@ defmodule EdanticTest do
     }
 
     assert {:error, _} = Edantic.cast(Person, :t, data_bad_department)
-
   end
 
 end

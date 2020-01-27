@@ -8,7 +8,7 @@
 
 # Edantic
 
-Eduntic is a library for casting «plain» JSON-originated data into Elixir data structs
+Eduntic is a library for casting «plain» JSON-originated data into Elixir data structures
 with nessesary validations.
 
 ## Example
@@ -55,9 +55,27 @@ person == %Person{
 }
 ```
 
+```elixir
+data_bad_department = %{
+  "age" => 23,
+  "name" => ["girolamo", "savonarola"],
+  "department" => "unknown"
+}
+
+assert {:error, error} = Edantic.cast(Person, :t, data_bad_department)
+
+IO.puts(Edantic.CastError.format(error))
+```
+
+```
+key-value pair does not match to any of the specified for the map
+  data: %{"department" => "unknown"}
+  type: %Edantic.Support.Types.Person{age: non_neg_integer(), department: :finance | :it, name: {first_name(), second_name()}}}
+```
+
 ## JSON
 
-By «JSON-originated» data is denoted the following type `t`:
+By «JSON-originated data» is denoted all the data matching the following type `t`:
 
 ```elixir
 @type key :: String.t
@@ -67,7 +85,7 @@ By «JSON-originated» data is denoted the following type `t`:
 
 ## Primitive convertions
 
-Since plain data structure is rather poor, there are some automatic enrichments allowed while casting:
+Since plain data structures are rather poor, there are some automatic enrichments allowed while casting:
 
 * Strings can be casted to corresponding atoms `"a" -> :a`.
 * Lists of suitable size can be casted to tuples `[1, "a"] -> {1, :a}`.

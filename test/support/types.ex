@@ -109,6 +109,49 @@ defmodule Edantic.Support.Types do
   @type t_par(a) :: {Par.t(a, integer()), Par.t(a, list())}
   @type t_par_spec :: t_par(:ok)
 
+  @type t_term :: term()
+
+  @type t_arity :: arity()
+
+  @type t_as_boolean_ok :: as_boolean(:ok)
+
+  @type t_bitstring() :: bitstring()
+
+  @type t_boolean() :: boolean()
+
+  @type t_byte() :: byte()
+
+  @type t_char() :: char()
+
+  @type t_charlist() :: charlist()
+
+  @type t_nonempty_charlist() :: nonempty_charlist()
+
+  @type t_fun() :: fun()
+
+  @type t_function() :: function()
+
+  @type t_identifier() :: identifier()
+
+  @type t_iolist() :: iolist()
+
+  @type t_iodata() :: iodata()
+
+  @type t_keyword() :: keyword()
+
+  @type t_keyword_integer() :: keyword(integer())
+
+  @type t_module() :: module()
+
+  @type t_mfa() :: mfa()
+
+  @type t_no_return() :: no_return()
+
+  @type t_number() :: number()
+
+  @type t_timeout() :: timeout()
+
+  @type t_node() :: node()
 
   defmodule Person do
     defstruct [

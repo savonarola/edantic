@@ -10,7 +10,7 @@ defmodule Edantic.Map do
       |> try_cast_to_struct(struct_name)
     else
       if missing_required_key?(casted, types) do
-        :error
+        :required_keys_missing
       else
         map = casted_to_map(casted)
         {:ok, map}
@@ -21,7 +21,7 @@ defmodule Edantic.Map do
   def cast_map(e, casted, types, [key_val | rest]) do
     matched = cast_map_elem(e, %{}, types, key_val)
     if Enum.empty?(matched) do
-      :error
+      {:bad_key_val, key_val}
     else
       new_casted = Map.merge(casted, matched, fn _, kv1, kv2 -> [kv1, kv2] end)
       cast_map(e, new_casted, types, rest)
@@ -38,8 +38,8 @@ defmodule Edantic.Map do
   defp try_cast_to_struct(map, struct_name) do
     {:ok, struct!(struct_name, map)}
   rescue
-    _ ->
-      :error
+    e ->
+      {:struct_error, struct_name, e, map}
   end
 
   defp find_struct_name([], _) do
