@@ -59,7 +59,10 @@ defmodule Edantic.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
+      {:earmark, "~> 1.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev},
       {:excoveralls, "~> 0.5", only: :test}
     ]
   end
+
 end
