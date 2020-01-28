@@ -7,13 +7,14 @@ defmodule Edantic do
   defstruct module: nil,
             path: []
 
-  @type t :: %Edantic{}
+  @type t() :: %Edantic{}
 
+  @spec new(module) :: Edantic.t()
   def new(module) do
     %Edantic{module: module}
   end
 
-  @spec cast(module, atom, Json.t()) :: {:ok, term()} | {:error, term()}
+  @spec cast(module, atom, Json.t()) :: {:ok, term()} | {:error, CastError.t() | Error.t()}
   def cast(module, type, data) do
     if Json.valid?(data) do
       case find_typespec(module, type, 0) do
@@ -496,7 +497,7 @@ defmodule Edantic do
 
   # mfa
 
-  @type t_mfa :: {module(), atom(), arity()}
+  @type t_mfa() :: {module(), atom(), arity()}
 
   def cast_to_type_real(e, {:type, _, :mfa, _}, data) do
     {:ok, {mfa_type, _}} = find_typespec(__MODULE__, :t_mfa, 0)
@@ -511,7 +512,7 @@ defmodule Edantic do
 
   # number
 
-  @type t_number :: integer() | float()
+  @type t_number() :: integer() | float()
 
   def cast_to_type_real(e, {:type, _, :number, _}, data) do
     {:ok, {number_type, _}} = find_typespec(__MODULE__, :t_number, 0)

@@ -24,7 +24,7 @@ defmodule Person do
   @type first_name() :: String.t
   @type second_name() :: String.t
 
-  @type t :: %__MODULE__{
+  @type t() :: %__MODULE__{
     age: non_neg_integer(),
     name: {first_name(), second_name()},
     department: :finance | :it
@@ -62,9 +62,11 @@ data_bad_department = %{
   "department" => "unknown"
 }
 
-assert {:error, error} = Edantic.cast(Person, :t, data_bad_department)
+{:error, error} = Edantic.cast(Person, :t, data_bad_department)
 
-IO.puts(Edantic.CastError.format(error))
+error
+|> Edantic.CastError.format()
+|> IO.puts()
 ```
 
 ```
@@ -75,12 +77,13 @@ key-value pair does not match to any of the specified for the map
 
 ## JSON
 
-By «JSON-originated data» is denoted all the data matching the following type `t`:
+By «JSON-originated data» is denoted all the data matching the following type `t()`:
 
 ```elixir
-@type key :: String.t
-@type value :: String.t | nil | boolean | integer | float | %{optional(key) => value} | [value]
-@type t :: value
+@type key() :: String.t()
+@type value() ::
+        String.t() | nil | boolean | integer() | float() | %{optional(key()) => value()} | [value()]
+@type t() :: value()
 ```
 
 ## Primitive convertions
@@ -131,3 +134,6 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/edantic](https://hexdocs.pm/edantic).
 
+## License
+
+This software is licensed under [MIT License](LICENSE).

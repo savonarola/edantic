@@ -6,6 +6,8 @@ defmodule Edantic.CastError do
 
   alias __MODULE__, as: CastError
 
+  @type t() :: %CastError{}
+
   def new(message, type, data, previous_error \\ nil) do
     %CastError{
       type: type,
