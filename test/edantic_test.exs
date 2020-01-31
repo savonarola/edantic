@@ -4,6 +4,8 @@ defmodule EdanticTest do
   alias Edantic.Support.Types
   alias Edantic.Support.Types.Person
 
+  import Edantic
+
   test "cast: any()" do
     {e, t} = Types.t(:t_any)
     assert {:ok, "foo"} = Edantic.cast_to_type(e, t, "foo")
@@ -658,5 +660,13 @@ defmodule EdanticTest do
     }
 
     assert {:error, _} = Edantic.cast(Person, :t, data_bad_department)
+  end
+
+  test "cast as macro" do
+    assert {:ok, "foo"} = Edantic.cast(Types.t_any(), "foo")
+    assert {:ok, "foo"} = Edantic.cast(Edantic.Support.Types.t_any(), "foo")
+
+    assert {:error, _} = Edantic.cast(a + b, "foo")
+    assert {:error, _} = Edantic.cast(Types.t_any(123), "foo")
   end
 end

@@ -46,7 +46,9 @@ With Edantic we can simultaneously validate this data and convert it into Elixir
 
 ```elixir
 
-{:ok, person} = Edantic.cast(Person, :t, data)
+import Edantic
+
+{:ok, person} = Edantic.cast(Person.t(), data)
 
 person == %Person{
   age: 23,
@@ -62,7 +64,7 @@ data_bad_department = %{
   "department" => "unknown"
 }
 
-{:error, error} = Edantic.cast(Person, :t, data_bad_department)
+{:error, error} = Edantic.cast(Person.t(), data_bad_department)
 
 error
 |> Edantic.CastError.format()

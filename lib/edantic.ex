@@ -14,12 +14,27 @@ defmodule Edantic do
     %Edantic{module: module}
   end
 
+  defmacro cast({{:., _ctx1, [module, type]}, _, []}, data) do
+    quote do
+      cast(unquote(module), unquote(type), unquote(data))
+    end
+  end
+
+  defmacro cast(_type, _data) do
+    quote do
+      error("`Edantic.cast(Module.type(), data)` call expected")
+    end
+  end
+
   @spec cast(module, atom, Json.t()) :: {:ok, term()} | {:error, CastError.t() | Error.t()}
   def cast(module, type, data) do
     if Json.valid?(data) do
       case find_typespec(module, type, 0) do
-        {:ok, {typespec, []}} -> cast_to_type(new(module), typespec, data)
-        :error -> error("type #{module}.#{type}/0 not found")
+        {:ok, {typespec, []}} ->
+          cast_to_type(new(module), typespec, data)
+
+        :error ->
+          error("type #{module}.#{type}/0 not found")
       end
     else
       error("not a valid JSON")

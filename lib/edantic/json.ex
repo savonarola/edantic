@@ -3,13 +3,14 @@ defmodule Edantic.Json do
   @type value() ::
           String.t()
           | nil
-          | boolean
+          | boolean()
           | integer()
           | float()
           | %{optional(key()) => value()}
           | [value()]
   @type t() :: value()
 
+  @spec valid?(term()) :: boolean()
   def valid?(v) when is_nil(v) or is_boolean(v) or is_number(v) or is_binary(v) do
     true
   end
