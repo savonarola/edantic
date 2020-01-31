@@ -4,7 +4,7 @@ defmodule Edantic.MixProject do
   def project do
     [
       app: :edantic,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.9",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -27,7 +27,7 @@ defmodule Edantic.MixProject do
   end
 
   defp description do
-    "SMPP 3.4 protocol and framework implemented in Elixir"
+    "JSON casting and validation library based on Elixir type specifications"
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
