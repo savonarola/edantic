@@ -1,15 +1,9 @@
 [![Build Status](https://travis-ci.org/savonarola/edantic.svg?branch=master)](https://travis-ci.org/savonarola/edantic)
 [![Coverage Status](https://coveralls.io/repos/github/savonarola/edantic/badge.svg?branch=master&1504538909)](https://coveralls.io/github/savonarola/edantic?branch=master)
 
-
-<a href="https://funbox.ru">
-  <img src="http://funbox.ru/badges/sponsored_by_funbox_compact.svg" alt="Sponsored by FunBox" width=250 />
-</a>
-
 # Edantic
 
-Edantic is a library for casting «plain» JSON-originated data into Elixir data structures
-with nessesary validations.
+Edantic is a library for casting «plain» JSON-originated data into Elixir data structures with necessary validations.
 
 ## Example
 
@@ -88,18 +82,18 @@ By «JSON-originated data» is denoted all the data matching the following type 
 @type t() :: value()
 ```
 
-## Primitive convertions
+## Primitive conversions
 
 Since plain data structures are rather poor, there are some automatic enrichments allowed while casting:
 
-* Strings can be casted to corresponding atoms `"a" -> :a`.
-* Lists of suitable size can be casted to tuples `[1, "a"] -> {1, :a}`.
-* Maps can be casted to arbitrary struct whith the same set of fields `%{a: 123} -> %SomeSt{a: 123}`
+* Strings can be cast to corresponding atoms `"a" -> :a`.
+* Lists of suitable size can be cast to tuples `[1, "a"] -> {1, :a}`.
+* Maps can be cast to an arbitrary struct with the same set of fields `%{a: 123} -> %SomeSt{a: 123}`
 if fields pass validations.
 
 ## Usage in releases
 
-Since type info is located in seperate beam chunks which are stripped by default, be sure your releases
+Since type info is located in separate beam chunks which are stripped by default, be sure your releases
 do not strip them.
 
 For example, by setting `strip_beams` option to `false`.
