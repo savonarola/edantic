@@ -5,7 +5,7 @@ defmodule Edantic.MixProject do
     [
       app: :edantic,
       version: "0.1.1",
-      elixir: "~> 1.9",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -17,7 +17,8 @@ defmodule Edantic.MixProject do
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        "coveralls.github": :test
       ],
       dialyzer: [
         plt_add_deps: true,
@@ -55,10 +56,11 @@ defmodule Edantic.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
-      {:earmark, "~> 1.1", only: :dev},
-      {:ex_doc, "~> 0.11", only: :dev},
-      {:excoveralls, "~> 0.5", only: :test}
+      {:excoveralls, "~> 0.18", only: :test},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.37", only: :dev},
+      ## For excoveralls
+      {:castore, "~> 1.0", only: [:dev, :test]}
     ]
   end
 end

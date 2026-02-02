@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp_release }})
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          # Elixir 1.12
+
+          - elixir: 1.12.3
+            otp_release: 24.3
+
+          # Elixir 1.13
+
+          - elixir: 1.13.4
+            otp_release: 24.3
+
+          - elixir: 1.13.4
+            otp_release: 25.3
+
+          # Elixir 1.14
+
+          - elixir: 1.14.5
+            otp_release: 24.3
+
+          - elixir: 1.14.5
+            otp_release: 25.3
+
+          - elixir: 1.14.5
+            otp_release: 26.2
+
+          # Elixir 1.15
+
+          - elixir: 1.15.8
+            otp_release: 24.3
+
+          - elixir: 1.15.8
+            otp_release: 25.3
+
+          - elixir: 1.15.8
+            otp_release: 26.2
+
+          # Elixir 1.16
+
+          - elixir: 1.16.3
+            otp_release: 24.3
+
+          - elixir: 1.16.3
+            otp_release: 25.3
+
+          - elixir: 1.16.3
+            otp_release: 26.2
+
+          # Elixir 1.17
+
+          - elixir: 1.17.3
+            otp_release: 25.3
+
+          - elixir: 1.17.3
+            otp_release: 26.2
+
+          - elixir: 1.17.3
+            otp_release: 27.1
+
+          # Elixir 1.18
+
+          - elixir: 1.18.3
+            otp_release: 27.3
+
+          # Elixir 1.19
+
+          - elixir: 1.19.0
+            otp_release: 27.3
+
+          - elixir: 1.19.0
+            otp_release: 28.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp_release }}
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+      - name: Run tests
+        run: mix test
+
+  coveralls:
+    name: Coveralls
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: 1.19.0
+          otp-version: 28.0
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Run coveralls
+        run: mix coveralls.github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

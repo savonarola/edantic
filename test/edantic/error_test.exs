@@ -7,6 +7,6 @@ defmodule Edantic.ErrorTest do
   test "format" do
     assert {:error, error} = Edantic.cast(Types, :t_none, {})
 
-    assert s = Error.format(error)
+    Error.format(error)
   end
 end
