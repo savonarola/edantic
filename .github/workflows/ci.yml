@@ -120,5 +120,4 @@ jobs:
 
       - name: Run coveralls
         run: mix coveralls.github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true

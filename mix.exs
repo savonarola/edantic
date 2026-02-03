@@ -13,16 +13,21 @@ defmodule Edantic.MixProject do
       source_url: "https://github.com/savonarola/edantic",
       description: description(),
       package: package(),
-      preferred_cli_env: [
+      dialyzer: [
+        plt_add_deps: true,
+        flags: ["-Werror_handling", "-Wrace_conditions"]
+      ]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test,
         "coveralls.github": :test
-      ],
-      dialyzer: [
-        plt_add_deps: true,
-        flags: ["-Werror_handling", "-Wrace_conditions"]
       ]
     ]
   end
