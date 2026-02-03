@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/savonarola/edantic.svg?branch=master)](https://travis-ci.org/savonarola/edantic)
+[![CI](https://github.com/savonarola/edantic/actions/workflows/ci.yml/badge.svg)](https://github.com/savonarola/edantic/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/savonarola/edantic/badge.svg?branch=master&1504538909)](https://coveralls.io/github/savonarola/edantic?branch=master)
 
 # Edantic
